@@ -1,3 +1,26 @@
+cm.make <- function(query_m, refrn, pres, t)
+{
+  if(query_m == "bad"){
+    tp <- sum(refrn == 'bad' & pres > t)
+    tn <- sum(refrn == 'good' & pres < t)
+    fn <- sum(refrn == 'bad' & pres < t)
+    fp <- sum(refrn == 'good' & pres > t)
+    logl <- sum(log(ifelse(refrn == 'bad', pres, 1-pres)))
+    c(tp, tn, fn, fp, logl)
+  }
+  else if (query_m == "good") {
+    tp <- sum(refrn == 'good' & pres < t)
+    tn <- sum(refrn == 'bad' & pres > t)
+    fn <- sum(refrn == 'good' & pres > t)
+    fp <- sum(refrn == 'bad' & pres < t)
+    logl <- sum(log(ifelse(refrn == 'good', 1-pres, pres)))
+    c(tp, tn, fn, fp, logl)
+  } else {
+    stop(paste("ERROR: unknown query function", query_m))
+  }
+}
+# MCC, Acc, F1 and Precision
+setwd("D:/../scHiCStackL")
 df <- read.table('mouse/178/pca_cell_file.txt')
 lb <- read.table('mouse/178/label.txt')
 
@@ -28,6 +51,24 @@ for (i in 1:foldn) {
   pred_train <- predict(model, train[,!(names(train)=="label")])
   pred_test <- predict(model, test[,!(names(test)=="label")])
   pred_valid <- predict(model, valid[,!(names(valid)=="label")])
+  
+  #handle confusion matrix and logLikelihood
+  cm <- c(cm.make(query_m, d$reference, d$pred.score, thrsd))
+  tp_d <- cm[1]
+  tn_d <- cm[2]
+  fn_d <- cm[3]
+  fp_d <- cm[4]
+  snsty <- tp_d/(tp_d+fn_d)
+  spcty <- tn_d/(tn_d+fp_d)
+  pcsn <- tp_d/(tp_d+fp_d)
+  f1 <- (2*snsty*pcsn)/(snsty+pcsn)
+  lglkhd <- cm[5]
+  nlglkhd <- sum(log(ifelse(d$reference == query_m, (tp_d+fn_d)/dim(d)[[1]], (tn_d+fp_d)/dim(d)[[1]])))
+  psudR2 <- 1-(-2*lglkhd)/(-2*nlglkhd)
+  cm_train <- table(truth=train$label$V1, pred=pred_train[["predictions"]])
+  cm_test <- table(truth=test$label$V1, pred=pred_test[["predictions"]])
+  cm_valid <- table(truth=valid$label$V1, pred=pred_valid[["predictions"]])
+  
   
   auc_train <- multiclass.roc(train$label$V1, pred_train[["predictions"]])
   auc_test <- multiclass.roc(test$label$V1, pred_test[["predictions"]])
