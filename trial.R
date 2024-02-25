@@ -1,25 +1,20 @@
-cm.make <- function(query_m, refrn, pres, t)
-{
-  if(query_m == "bad"){
-    tp <- sum(refrn == 'bad' & pres > t)
-    tn <- sum(refrn == 'good' & pres < t)
-    fn <- sum(refrn == 'bad' & pres < t)
-    fp <- sum(refrn == 'good' & pres > t)
-    logl <- sum(log(ifelse(refrn == 'bad', pres, 1-pres)))
-    c(tp, tn, fn, fp, logl)
-  }
-  else if (query_m == "good") {
-    tp <- sum(refrn == 'good' & pres < t)
-    tn <- sum(refrn == 'bad' & pres > t)
-    fn <- sum(refrn == 'good' & pres > t)
-    fp <- sum(refrn == 'bad' & pres < t)
-    logl <- sum(log(ifelse(refrn == 'good', 1-pres, pres)))
-    c(tp, tn, fn, fp, logl)
-  } else {
-    stop(paste("ERROR: unknown query function", query_m))
-  }
+metric.value <- function(query_m) {
+  # MCC, Acc, F1 and Precision
+  acc <- sum(diag(query_m))/sum(query_m) # ACC
+  pcs <- diag(query_m)/colSums(query_m) # precision for multi-class
+  rcl <- diag(query_m)/rowSums(query_m) # recall for multi-class
+  ave.pcs <- mean(pcs) # Macro-averaging precision
+  f1 <- 2*pcs*rcl/(pcs+rcl)
+  ave.f1 <- mean(f1) # Macro-averaging f1
+  # (TP*TN – FP*FN) / √(TP+FP)(TP+FN)(TN+FP)(TN+FN)
+  tp <- diag(query_m)
+  fn <- rowSums(query_m) - diag(query_m)
+  fp <- colSums(query_m) - diag(query_m)
+  tn <- sum(query_m) - tp - fn - fp
+  mcc <- (tp*tn-fp*fn)/sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn))
+  ave.mcc <- mean(mcc) # Macro-averaging mcc
+  c(ave.mcc, acc, ave.f1, ave.pcs)
 }
-# MCC, Acc, F1 and Precision
 setwd("D:/../scHiCStackL")
 df <- read.table('mouse/178/pca_cell_file.txt')
 lb <- read.table('mouse/178/label.txt')
