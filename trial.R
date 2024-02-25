@@ -16,7 +16,9 @@ value.metric <- function(truth, pred) {
   tn <- sum(query_m) - tp - fn - fp
   mcc <- (tp*tn-fp*fn)/sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn))
   ave.mcc <- mean(mcc, na.rm = TRUE) # Macro-averaging mcc
-  c(ave.mcc, acc, ave.f1, ave.pcs)
+  res <- c(ave.mcc, acc, ave.f1, ave.pcs)
+  names(res) <- c('MCC', 'Acc', 'F1', 'Precision')
+  return(res)
 }
 setwd("D:/Wayne/研究/scHiCStackL")
 df <- read.table('mouse/178/pca_cell_file.txt')
