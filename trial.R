@@ -20,7 +20,7 @@ value.metric <- function(truth, pred) {
   names(res) <- c('MCC', 'Acc', 'F1', 'Precision')
   return(res)
 }
-setwd("D:/Wayne/研究/scHiCStackL")
+setwd("D:/../scHiCStackL")
 df <- read.table('mouse/178/pca_cell_file.txt')
 lb <- read.table('mouse/178/label.txt')
 
@@ -33,12 +33,12 @@ set.seed(65)
 idx <- sample(foldn, nrow(dat), replace = TRUE)#, prob = foldn)
 #initial
 require(ranger)
-require(pROC)
-res_set <- c()
-res_train <- c()
-res_valid <- c()
-res_test <- c()
-res_auc <- c()
+# require(pROC)
+# res_set <- c()
+# res_train <- c()
+# res_valid <- c()
+# res_test <- c()
+res.set.mg <- c()
 for (i in 1:foldn) {
   j <- i+1 #2,3,4,5,6
   if(j>foldn){j <- j-foldn}
@@ -61,30 +61,34 @@ for (i in 1:foldn) {
   # cm_valid <- table(truth=valid$label$V1, pred=pred_valid[["predictions"]])
   
   
-  auc_train <- multiclass.roc(train$label$V1, pred_train[["predictions"]])
-  auc_test <- multiclass.roc(test$label$V1, pred_test[["predictions"]])
-  auc_valid <- multiclass.roc(valid$label$V1, pred_valid[["predictions"]])
-  res_train <- c(res_train, round(auc_train$auc,2))
-  res_test <- c(res_test, round(auc_test$auc,2))
-  res_valid <- c(res_valid, round(auc_valid$auc,2))
-  res_set <- c(res_set, paste0("fold",i))
+  # auc_train <- multiclass.roc(train$label$V1, pred_train[["predictions"]])
+  # auc_test <- multiclass.roc(test$label$V1, pred_test[["predictions"]])
+  # auc_valid <- multiclass.roc(valid$label$V1, pred_valid[["predictions"]])
+  # res_train <- c(res_train, round(res.train,2))
+  # res_test <- c(res_test, round(res.test,2))
+  # res_valid <- c(res_valid, round(res.valid,2))
+  res.set <- rbind(res.train, res.test, res.valid)
+  set.name <- paste0("fold", i, c("_train","_test","_valid"))
+  rownames(res.set) <- set.name
+  res.set.mg <- rbind(res.set.mg, res.set)
+  
 }
+round(res.set.mg,2)
 
-
-out_data<-data.frame(set=res_set, training=res_train, 
-                     validation=res_valid, testing=res_test, 
-                     stringsAsFactors = F)
-out_data<-rbind(out_data,c('ave.', round(mean(res_train),2), 
-                           round(mean(res_valid),2), 
-                           round(mean(res_test),2)))
-print(out_data)
-
-#make testing performance
-pidx <- which.max(out_data$validation)
-ptrain <- dat[idx!=pidx,]
-ptest <- dat[idx==pidx,]
-model_prodc <- ranger(label ~ .,
-                      data=ptrain)
-pred_ptest <- predict(model_prodc, ptest[,!(names(ptest)=="label")])
-auc_ptest <- multiclass.roc(ptest$label$V1, pred_ptest[["predictions"]])
-print(auc_ptest)
+# out_data<-data.frame(set=res_set, training=res_train, 
+#                      validation=res_valid, testing=res_test, 
+#                      stringsAsFactors = F)
+# out_data<-rbind(out_data,c('ave.', round(mean(res_train),2), 
+#                            round(mean(res_valid),2), 
+#                            round(mean(res_test),2)))
+# print(out_data)
+# 
+# #make testing performance
+# pidx <- which.max(out_data$validation)
+# ptrain <- dat[idx!=pidx,]
+# ptest <- dat[idx==pidx,]
+# model_prodc <- ranger(label ~ .,
+#                       data=ptrain)
+# pred_ptest <- predict(model_prodc, ptest[,!(names(ptest)=="label")])
+# auc_ptest <- multiclass.roc(ptest$label$V1, pred_ptest[["predictions"]])
+# print(auc_ptest)
