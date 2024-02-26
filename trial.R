@@ -23,11 +23,13 @@ value.metric <- function(truth, pred, m) {
 model.ctrl <- function(m, t, d) {
   switch (m,
     ranger = {
+      require(ranger)
       model <- ranger(label ~ .,
                       data=t, classification = TRUE)
       pred <- predict(model, d[,!(names(d)=="label")])[["predictions"]]
     },
     rpart = {
+      require(rpart)
       model <- rpart(t$label$V1 ~ .,
                      data=t, control=rpart.control(minsplit = 3, minbucket = 2, maxcompete = 3, maxdepth = 11),
                      method="class")
@@ -38,19 +40,17 @@ model.ctrl <- function(m, t, d) {
   return(value.metric(truth, pred, m))
 }
 setwd("D:/../scHiCStackL")
-df <- read.table('mouse/178/pca_cell_file.txt')
-lb <- read.table('mouse/178/label.txt')
+df <- read.table('human/2655/pca_cell_file.txt')
+lb <- read.table('human/2655/label.txt')
 
 dat <- df
 dat$label <- lb
 
 # select subset of the data
-foldn <- 4
-set.seed(65)
+foldn <- 18
+# set.seed(65)
 idx <- sample(foldn, nrow(dat), replace = TRUE)#, prob = foldn)
-#initial
-require(ranger)
-require(rpart)
+# #initial
 # require(pROC)
 # res_set <- c()
 # res_train <- c()
@@ -103,8 +103,9 @@ for (i in 1:foldn) {
   res.set.mg <- rbind(res.set.mg, res.set)
   
 }
-round(res.set.mg,2)
-
+out.data <- data.frame(round(res.set.mg, 6))
+out.data[which(out.data$ranger.MCC != 1),]
+which.max(out.data[which(out.data$ranger.MCC != 1),"rpart.MCC"])
 # out_data<-data.frame(set=res_set, training=res_train, 
 #                      validation=res_valid, testing=res_test, 
 #                      stringsAsFactors = F)
