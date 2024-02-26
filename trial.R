@@ -20,7 +20,7 @@ value.metric <- function(truth, pred) {
   names(res) <- c('MCC', 'Acc', 'F1', 'Precision')
   return(res)
 }
-setwd("D:/../scHiCStackL")
+setwd("C:/Users/Wayne-NB/Desktop/MASTER.InService/研究")
 df <- read.table('mouse/178/pca_cell_file.txt')
 lb <- read.table('mouse/178/label.txt')
 
@@ -28,7 +28,7 @@ dat <- df
 dat$label <- lb
 
 # select subset of the data
-foldn <- 9
+foldn <- 6
 set.seed(65)
 idx <- sample(foldn, nrow(dat), replace = TRUE)#, prob = foldn)
 #initial
@@ -68,7 +68,7 @@ for (i in 1:foldn) {
   # res_test <- c(res_test, round(res.test,2))
   # res_valid <- c(res_valid, round(res.valid,2))
   res.set <- rbind(res.train, res.test, res.valid)
-  set.name <- paste0("fold", i, c("_train","_test","_valid"))
+  set.name <- paste0("fold.", i, c("_train","_test","_valid"))
   rownames(res.set) <- set.name
   res.set.mg <- rbind(res.set.mg, res.set)
   
