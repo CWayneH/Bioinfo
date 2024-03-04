@@ -34,6 +34,13 @@ model.ctrl <- function(m, t, d) {
                      data=t, control=rpart.control(minsplit = 3, minbucket = 2, maxcompete = 3, maxdepth = 11),
                      method="class")
       pred <- predict(model, newdata = d, type="class")
+    },
+    glm = {
+      require(glmnet)
+      num.t <- sapply(t, unlist)
+      num.d <- sapply(d, unlist)
+      model <- glmnet(num.t[, 1:50], num.t[, 51], family = "multinomial")
+      pred <- predict(model, newx = num.d[, 1:50], type = "class")[, which.min(model$lambda)]
     }
   )
   truth <- d$label$V1
@@ -57,6 +64,7 @@ idx <- sample(foldn, nrow(dat), replace = TRUE)#, prob = foldn)
 # res_valid <- c()
 # res_test <- c()
 res.set.mg <- c()
+t <- Sys.time()
 for (i in 1:foldn) {
   j <- i+1 #2,3,4,5,6
   if(j>foldn){j <- j-foldn}
@@ -84,6 +92,9 @@ for (i in 1:foldn) {
   res.train.rpart <- model.ctrl("rpart", train, train)
   res.test.rpart <- model.ctrl("rpart", train, test)
   res.valid.rpart <- model.ctrl("rpart", train, valid)
+  res.train.glm <- model.ctrl("glm", train, train)
+  res.test.glm <- model.ctrl("glm", train, test)
+  res.valid.glm <- model.ctrl("glm", train, valid)
   # cm_train <- table(truth=train$label$V1, pred=pred_train[["predictions"]])
   # cm_test <- table(truth=test$label$V1, pred=pred_test[["predictions"]])
   # cm_valid <- table(truth=valid$label$V1, pred=pred_valid[["predictions"]])
@@ -97,11 +108,12 @@ for (i in 1:foldn) {
   # res_valid <- c(res_valid, round(res.valid,2))
   res.set.ranger <- rbind(res.train.ranger, res.test.ranger, res.valid.ranger)
   res.set.raprt <- rbind(res.train.rpart, res.test.rpart, res.valid.rpart)
-  res.set <- cbind(res.set.ranger, res.set.raprt)
+  res.set.glm <- rbind(res.train.glm, res.test.glm, res.valid.glm)
+  res.set <- cbind(res.set.ranger, res.set.raprt, res.set.glm)
   set.name <- paste0("fold.", i, c("_train","_test","_valid"))
   rownames(res.set) <- set.name
   res.set.mg <- rbind(res.set.mg, res.set)
-  
+  print(difftime(Sys.time(), t))
 }
 out.data <- data.frame(round(res.set.mg, 6))
 out.data[which(out.data$ranger.MCC != 1),]
