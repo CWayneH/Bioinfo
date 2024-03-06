@@ -25,7 +25,7 @@
 - [178 entries of mouse](../main/mouse/178/mouse178_res_10fold.csv) : time elapsed of 3.371998 secs ( CPU @ 2.40GHz，2419 Mhz )
   #### find top 5 glm.precision within validation
   ||fold.4_test|fold.1_test|fold.5_valid|fold.9_test|fold.6_valid|
-  |:-|:-|-:|-:|-:|-:|
+  |:-|-:|-:|-:|-:|-:|
   |ranger.MCC|0.889209|0.679575|0.717454|0.144236|0.838393|
   |ranger.Acc|0.944444|0.809524|0.866667|0.600000|0.937500|
   |ranger.F1|0.920000|0.757980|0.858333|0.580952|0.841270|
@@ -40,4 +40,20 @@
   |glm.Precision|0.974359|0.972222|0.972222|0.939394|0.916667|
 
 - [626 entries of human](../main/human/626/human626_res_10fold.csv) : time elapsed of 6.838981 secs
+  #### find top 5 rpart.precision within validation
+  ||fold.4_train|fold.5_test|fold.6_train|fold.2_train|fold.7_train|
+  |:-|-:|-:|-:|-:|-:|
+  |ranger.MCC|1.000000|0.787939|1.000000|1.000000|1.000000|
+  |ranger.Acc|1.000000|0.928571|1.000000|1.000000|1.000000|
+  |ranger.F1| 1.000000|0.795788|1.000000|1.000000|1.000000|
+  |ranger.Precision|1.000000|0.952381|1.000000|1.000000|1.000000|
+  |rpart.MCC| 0.954866|0.877530|0.917368|0.891040|0.889022|
+  |rpart.Acc| 0.974490|0.946429|0.962085|0.953431|0.948529|
+  |rpart.F1|  0.969775|0.902456|0.938147|0.915069|0.918387|
+  |rpart.Precision| 0.973076|0.962454|0.948551|0.938901|0.925794|
+  |glm.MCC|   1.000000|1.000000|1.000000|1.000000|1.000000|
+  |glm.Acc|   1.000000|1.000000|1.000000|1.000000|1.000000|
+  |glm.F1|1.000000|1.000000|1.000000|1.000000|1.000000|
+  |glm.Precision|   1.000000|1.000000|1.000000|1.000000|1.000000|
+
 - [2655 entries of human](../main/human/2655/human2655_res_10fold.csv) : time elapsed of 34.62061 secs
