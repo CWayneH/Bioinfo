@@ -57,12 +57,7 @@ dat$label <- lb
 foldn <- 18
 # set.seed(65)
 idx <- sample(foldn, nrow(dat), replace = TRUE)#, prob = foldn)
-# #initial
-# require(pROC)
-# res_set <- c()
-# res_train <- c()
-# res_valid <- c()
-# res_test <- c()
+
 res.set.mg <- c()
 t <- Sys.time()
 for (i in 1:foldn) {
@@ -71,20 +66,6 @@ for (i in 1:foldn) {
   test <- dat[idx==i,]
   valid <- dat[idx==j,]
   train <- dat[idx!=i&idx!=j,]
-  # #prediction in ranger
-  # model <- ranger(label ~ .,
-  #                 data=train, classification = TRUE)
-  # #predict in dt
-  # model <- rpart(train$label$V1 ~ .,
-  #                data=train, control=rpart.control(minsplit = 3, minbucket = 2, maxcompete = 3, maxdepth = 11),
-  #                method="class")
-  # pred_train <- predict(model, train[,!(names(train)=="label")])
-  # pred_test <- predict(model, test[,!(names(test)=="label")])
-  # pred_valid <- predict(model, valid[,!(names(valid)=="label")])
-  
-  # res.train <- value.metric(train$label$V1, pred_train[["predictions"]])
-  # res.test <- value.metric(test$label$V1, pred_test[["predictions"]])
-  # res.valid <- value.metric(valid$label$V1, pred_valid[["predictions"]])
   
   res.train.ranger <- model.ctrl("ranger", train, train)
   res.test.ranger <- model.ctrl("ranger", train, test)
@@ -95,17 +76,7 @@ for (i in 1:foldn) {
   res.train.glm <- model.ctrl("glm", train, train)
   res.test.glm <- model.ctrl("glm", train, test)
   res.valid.glm <- model.ctrl("glm", train, valid)
-  # cm_train <- table(truth=train$label$V1, pred=pred_train[["predictions"]])
-  # cm_test <- table(truth=test$label$V1, pred=pred_test[["predictions"]])
-  # cm_valid <- table(truth=valid$label$V1, pred=pred_valid[["predictions"]])
   
-  
-  # auc_train <- multiclass.roc(train$label$V1, pred_train[["predictions"]])
-  # auc_test <- multiclass.roc(test$label$V1, pred_test[["predictions"]])
-  # auc_valid <- multiclass.roc(valid$label$V1, pred_valid[["predictions"]])
-  # res_train <- c(res_train, round(res.train,2))
-  # res_test <- c(res_test, round(res.test,2))
-  # res_valid <- c(res_valid, round(res.valid,2))
   res.set.ranger <- rbind(res.train.ranger, res.test.ranger, res.valid.ranger)
   res.set.raprt <- rbind(res.train.rpart, res.test.rpart, res.valid.rpart)
   res.set.glm <- rbind(res.train.glm, res.test.glm, res.valid.glm)
@@ -115,23 +86,13 @@ for (i in 1:foldn) {
   res.set.mg <- rbind(res.set.mg, res.set)
   print(difftime(Sys.time(), t))
 }
-out.data <- data.frame(round(res.set.mg, 6))
-out.data[which(out.data$ranger.MCC != 1),]
-which.max(out.data[which(out.data$ranger.MCC != 1),"rpart.MCC"])
-# out_data<-data.frame(set=res_set, training=res_train, 
-#                      validation=res_valid, testing=res_test, 
-#                      stringsAsFactors = F)
-# out_data<-rbind(out_data,c('ave.', round(mean(res_train),2), 
-#                            round(mean(res_valid),2), 
-#                            round(mean(res_test),2)))
-# print(out_data)
-# 
-# #make testing performance
-# pidx <- which.max(out_data$validation)
-# ptrain <- dat[idx!=pidx,]
-# ptest <- dat[idx==pidx,]
-# model_prodc <- ranger(label ~ .,
-#                       data=ptrain)
-# pred_ptest <- predict(model_prodc, ptest[,!(names(ptest)=="label")])
-# auc_ptest <- multiclass.roc(ptest$label$V1, pred_ptest[["predictions"]])
-# print(auc_ptest)
+
+res.data <- data.frame(round(res.set.mg, 6))
+res.data[which(res.data$glm.MCC != 1),]
+which.max(res.data[which(res.data$ranger.MCC != 1),"rpart.MCC"])
+res.data.dof <- res.data[which(res.data$ranger.MCC != 1),]
+t(head(res.data.dof[order(res.data.dof[,"ranger.MCC"], decreasing = TRUE),],5))
+
+out.data <- cbind(round=rownames(res.data), res.data)
+write.table(out.data, file = paste0("human2655_res_10fold.csv"), 
+            sep = ",", quote = FALSE, row.names = FALSE)
