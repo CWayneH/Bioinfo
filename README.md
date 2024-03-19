@@ -1,4 +1,5 @@
 # Bioinfo
+reference: [scHiCstackL](https://github.com/HaoWuLab-Bioinformatics/scHiCStackL)
 ### data explore
 - label / pca result
 - label : 0, 1, 2, 3 ; multi-class problem of classification
